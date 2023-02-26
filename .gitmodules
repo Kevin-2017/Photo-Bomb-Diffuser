@@ -1,0 +1,6 @@
+[submodule "Pluralistic"]
+	path = Pluralistic
+	url = https://github.com/lyndonzheng/Pluralistic-Inpainting.git
+[submodule "Pose2Seg"]
+	path = Pose2Seg
+	url = https://github.com/liruilong940607/Pose2Seg.git
