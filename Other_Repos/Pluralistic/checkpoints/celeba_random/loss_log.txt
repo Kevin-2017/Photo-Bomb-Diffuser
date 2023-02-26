@@ -1,0 +1,33 @@
+================ Training Loss (Sat Feb 11 17:45:55 2023) ================
+================ Training Loss (Sat Feb 11 17:46:42 2023) ================
+(epoch: 50, iters: 100, time: 3.202) kl_rec: 9.987 kl_g: 1.735 app_rec: 17.089 app_g: 9.394 ad_g: 0.423 img_d: 0.212 ad_rec: 0.108 img_d_rec: 0.212 
+(epoch: 100, iters: 200, time: 3.164) kl_rec: 3.019 kl_g: 1.637 app_rec: 16.989 app_g: 5.721 ad_g: 0.283 img_d: 0.191 ad_rec: 0.185 img_d_rec: 0.186 
+(epoch: 150, iters: 300, time: 3.082) kl_rec: 3.805 kl_g: 4.398 app_rec: 15.883 app_g: 6.420 ad_g: 0.386 img_d: 0.158 ad_rec: 0.006 img_d_rec: 0.246 
+(epoch: 200, iters: 400, time: 3.162) kl_rec: 3.062 kl_g: 2.136 app_rec: 16.072 app_g: 8.025 ad_g: 0.374 img_d: 0.328 ad_rec: 0.053 img_d_rec: 0.242 
+(epoch: 250, iters: 500, time: 3.187) kl_rec: 3.202 kl_g: 2.848 app_rec: 14.012 app_g: 6.592 ad_g: 0.577 img_d: 0.213 ad_rec: 0.018 img_d_rec: 0.312 
+(epoch: 300, iters: 600, time: 3.196) kl_rec: 2.335 kl_g: 1.216 app_rec: 13.593 app_g: 6.118 ad_g: 0.243 img_d: 0.177 ad_rec: 0.136 img_d_rec: 0.166 
+(epoch: 350, iters: 700, time: 3.203) kl_rec: 2.838 kl_g: 2.183 app_rec: 11.613 app_g: 5.974 ad_g: 0.394 img_d: 0.232 ad_rec: 0.225 img_d_rec: 0.138 
+(epoch: 400, iters: 800, time: 3.168) kl_rec: 4.759 kl_g: 3.711 app_rec: 11.268 app_g: 5.601 ad_g: 0.374 img_d: 0.273 ad_rec: 0.058 img_d_rec: 0.248 
+(epoch: 450, iters: 900, time: 3.164) kl_rec: 6.378 kl_g: 2.859 app_rec: 10.991 app_g: 5.548 ad_g: 0.303 img_d: 0.230 ad_rec: 0.123 img_d_rec: 0.275 
+(epoch: 500, iters: 1000, time: 3.202) kl_rec: 2.173 kl_g: 1.341 app_rec: 12.337 app_g: 5.171 ad_g: 0.582 img_d: 0.245 ad_rec: 0.272 img_d_rec: 0.211 
+(epoch: 550, iters: 1100, time: 3.199) kl_rec: 3.852 kl_g: 2.756 app_rec: 10.906 app_g: 4.877 ad_g: 0.376 img_d: 0.168 ad_rec: 0.205 img_d_rec: 0.188 
+(epoch: 600, iters: 1200, time: 3.193) kl_rec: 2.623 kl_g: 1.565 app_rec: 12.181 app_g: 4.340 ad_g: 0.593 img_d: 0.122 ad_rec: 0.257 img_d_rec: 0.203 
+(epoch: 650, iters: 1300, time: 3.157) kl_rec: 1.846 kl_g: 1.114 app_rec: 11.476 app_g: 4.411 ad_g: 0.426 img_d: 0.112 ad_rec: 0.380 img_d_rec: 0.107 
+(epoch: 700, iters: 1400, time: 3.225) kl_rec: 4.423 kl_g: 3.155 app_rec: 11.042 app_g: 4.771 ad_g: 0.396 img_d: 0.248 ad_rec: 0.303 img_d_rec: 0.116 
+(epoch: 750, iters: 1500, time: 3.249) kl_rec: 4.767 kl_g: 1.303 app_rec: 10.984 app_g: 4.549 ad_g: 0.468 img_d: 0.165 ad_rec: 0.511 img_d_rec: 0.058 
+(epoch: 800, iters: 1600, time: 3.202) kl_rec: 3.919 kl_g: 2.446 app_rec: 9.640 app_g: 4.855 ad_g: 0.450 img_d: 0.194 ad_rec: 0.342 img_d_rec: 0.216 
+(epoch: 850, iters: 1700, time: 3.218) kl_rec: 3.793 kl_g: 2.547 app_rec: 9.033 app_g: 4.742 ad_g: 0.725 img_d: 0.215 ad_rec: 0.694 img_d_rec: 0.041 
+(epoch: 900, iters: 1800, time: 3.280) kl_rec: 1.724 kl_g: 2.256 app_rec: 10.995 app_g: 4.089 ad_g: 0.537 img_d: 0.123 ad_rec: 0.438 img_d_rec: 0.102 
+(epoch: 950, iters: 1900, time: 3.355) kl_rec: 5.688 kl_g: 4.731 app_rec: 10.660 app_g: 4.366 ad_g: 0.730 img_d: 0.135 ad_rec: 0.674 img_d_rec: 0.045 
+(epoch: 1000, iters: 2000, time: 3.264) kl_rec: 1.487 kl_g: 1.710 app_rec: 9.909 app_g: 4.215 ad_g: 0.547 img_d: 0.135 ad_rec: 0.361 img_d_rec: 0.111 
+(epoch: 1050, iters: 2100, time: 3.353) kl_rec: 5.512 kl_g: 2.337 app_rec: 10.333 app_g: 4.592 ad_g: 0.686 img_d: 0.088 ad_rec: 0.716 img_d_rec: 0.096 
+(epoch: 1100, iters: 2200, time: 3.242) kl_rec: 1.798 kl_g: 2.085 app_rec: 10.342 app_g: 3.880 ad_g: 0.644 img_d: 0.089 ad_rec: 0.562 img_d_rec: 0.123 
+(epoch: 1150, iters: 2300, time: 3.370) kl_rec: 2.672 kl_g: 0.784 app_rec: 11.326 app_g: 4.028 ad_g: 0.933 img_d: 0.060 ad_rec: 0.615 img_d_rec: 0.065 
+(epoch: 1200, iters: 2400, time: 3.258) kl_rec: 3.400 kl_g: 0.756 app_rec: 9.655 app_g: 3.987 ad_g: 0.662 img_d: 0.219 ad_rec: 0.776 img_d_rec: 0.052 
+(epoch: 1250, iters: 2500, time: 3.444) kl_rec: 5.689 kl_g: 3.412 app_rec: 9.306 app_g: 3.963 ad_g: 0.434 img_d: 0.344 ad_rec: 0.666 img_d_rec: 0.069 
+(epoch: 1300, iters: 2600, time: 3.360) kl_rec: 1.778 kl_g: 1.645 app_rec: 10.199 app_g: 3.488 ad_g: 0.967 img_d: 0.058 ad_rec: 0.275 img_d_rec: 0.125 
+(epoch: 1350, iters: 2700, time: 3.278) kl_rec: 2.494 kl_g: 1.269 app_rec: 10.925 app_g: 4.018 ad_g: 1.071 img_d: 0.105 ad_rec: 0.717 img_d_rec: 0.049 
+(epoch: 1400, iters: 2800, time: 3.279) kl_rec: 5.987 kl_g: 1.023 app_rec: 9.135 app_g: 3.557 ad_g: 0.898 img_d: 0.048 ad_rec: 0.731 img_d_rec: 0.061 
+(epoch: 1450, iters: 2900, time: 3.356) kl_rec: 4.687 kl_g: 1.460 app_rec: 10.784 app_g: 4.443 ad_g: 0.807 img_d: 0.061 ad_rec: 0.786 img_d_rec: 0.043 
+(epoch: 1500, iters: 3000, time: 3.372) kl_rec: 5.101 kl_g: 0.626 app_rec: 9.869 app_g: 3.695 ad_g: 0.921 img_d: 0.090 ad_rec: 0.791 img_d_rec: 0.040 
+(epoch: 1550, iters: 3100, time: 3.348) kl_rec: 4.262 kl_g: 1.624 app_rec: 8.423 app_g: 4.389 ad_g: 0.939 img_d: 0.125 ad_rec: 0.436 img_d_rec: 0.099 
