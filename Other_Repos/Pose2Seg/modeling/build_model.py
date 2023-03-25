@@ -40,14 +40,16 @@ class Pose2Seg(nn.Module):
             self.segnet = resnet10units(256)  
         self.poseAlignOp = PoseAlign(template_file=osp.dirname(osp.abspath(__file__))+'/templates.json', 
                                      visualize=False, factor = 1.0)
-        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         mean = (0.485, 0.456, 0.406)
         std = (0.229, 0.224, 0.225)
         self.mean = np.ones((self.size_input, self.size_input, 3)) * mean
-        self.mean = torch.from_numpy(self.mean.transpose(2, 0, 1)).cuda(0).float()
+        # self.mean = torch.from_numpy(self.mean.transpose(2, 0, 1)).cuda(0).float()
+        self.mean = torch.from_numpy(self.mean.transpose(2, 0, 1)).float().to(device)
         
         self.std = np.ones((self.size_input, self.size_input, 3)) * std
-        self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).cuda(0).float()
+        # self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).cuda(0).float()
+        self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).float().to(device)
         self.visCount = 0
         
         pass
@@ -69,15 +71,15 @@ class Pose2Seg(nn.Module):
         return output
     
     def _setInputs(self, batchimgs, batchkpts, batchmasks=None):
-        ## batchimgs: a list of array (H, W, 3)
-        ## batchkpts: a list of array (m, 17, 3)
-        ## batchmasks: a list of array (m, H, W)
+        ## batchimgs: a list of array (H, W, 3) images
+        ## batchkpts: a list of array (m, 17, 3) keypoints, m is number of people
+        ## batchmasks: a list of array (m, H, W) masks for segmentation
         self.batchimgs = batchimgs 
         self.batchkpts = batchkpts
         self.batchmasks = batchmasks
         self.bz = len(self.batchimgs)
         
-        ## sample
+        ## sample I think this deals with the case of more than 8 
         if self.training:
             ids = [(i, j) for i, kpts in enumerate(batchkpts) for j in range(len(kpts))]
             if len(ids) > self.MAXINST:
@@ -175,8 +177,10 @@ class Pose2Seg(nn.Module):
         ##                                       std=[0.229, 0.224, 0.225])
         ## Note: input[channel] = (input[channel] - mean[channel]) / std[channel], input is (0,1), not (0,255)
         #########################################################################################################
-        inputs = (torch.from_numpy(self.inputs).cuda(0) / 255.0 - self.mean) / self.std
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        inputs = (torch.from_numpy(self.inputs).to(device) / 255.0 - self.mean) / self.std
         [p1, p2, p3, p4] = self.backbone(inputs)
+        print(p1.size())
         feature = p1
         
         alignHs = np.vstack(self.featAlignMatrixs)
@@ -188,7 +192,7 @@ class Pose2Seg(nn.Module):
 
         if self.cat_skeleton:
             skeletons = np.vstack(self.skeletonFeats)
-            skeletons = torch.from_numpy(skeletons).float().cuda(0)
+            skeletons = torch.from_numpy(skeletons).float().to(device)
             rois = torch.cat((rois, skeletons), 1)
         
         netOutput = self.segnet(rois)
@@ -210,12 +214,12 @@ class Pose2Seg(nn.Module):
         
     def _calcLoss(self, netOutput):
         mask_loss_func = nn.CrossEntropyLoss(ignore_index=255)
-        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         gts = []
         for masks, Matrixs in zip(self.batchmasks, self.maskAlignMatrixs):
             for mask, matrix in zip(masks, Matrixs):
                 gts.append(cv2.warpAffine(mask, matrix[0:2], (self.size_output, self.size_output)))
-        gts = torch.from_numpy(np.array(gts)).long().cuda(0)
+        gts = torch.from_numpy(np.array(gts)).long().to(device)
         
         loss = mask_loss_func(netOutput, gts)
         return loss

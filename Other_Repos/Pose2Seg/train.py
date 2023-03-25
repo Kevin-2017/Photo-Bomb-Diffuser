@@ -91,9 +91,13 @@ def train(model, dataloader, optimizer, epoch, iteration):
     return iteration
 
 class Dataset():
-    def __init__(self):
-        ImageRoot = "./data/coco2017/train2017"
-        AnnoFile = "./data/coco2017/annotations/person_keypoints_train2017_pose2seg.json"
+    def __init__(self,test=True):
+        if test:
+            ImageRoot = "./data/coco2017/val2017"
+            AnnoFile = "./data/coco2017/annotations/person_keypoints_val2017_pose2seg.json"
+        else:
+            ImageRoot = "./data/coco2017/train2017"
+            AnnoFile = "./data/coco2017/annotations/person_keypoints_train2017_pose2seg.json"
         self.datainfos = CocoDatasetInfo(ImageRoot, AnnoFile, onlyperson=True, loadimg=True)
     
     def __len__(self):
@@ -119,7 +123,9 @@ class Dataset():
         
 if __name__=="__main__":
     logger.info("===========> loading model <===========")
-    model = Pose2Seg().cuda()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # model = Pose2Seg().cuda()
+    model = Pose2Seg().to(device)
     #model.init("")
     model.train()
     
