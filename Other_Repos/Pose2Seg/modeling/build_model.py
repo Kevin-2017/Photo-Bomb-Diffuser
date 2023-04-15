@@ -19,6 +19,7 @@ from modeling.affine_align import affine_align_gpu
 from modeling.seg_module import resnet10units
 from modeling.core import PoseAlign
 from modeling.skeleton_feat import genSkeletons
+from modeling.swin import swinv2_large, fpn
 
 timers = Timers()
 
@@ -27,13 +28,16 @@ class Pose2Seg(nn.Module):
         super(Pose2Seg, self).__init__()
         self.MAXINST = 8
         ## size origin ->(m1)-> input ->(m2)-> feature ->(m3)-> align ->(m4)-> output
-        self.size_input = 512
+        # self.size_input = 512
+        self.size_input = 256
         self.size_feat = 128
         self.size_align = 64
         self.size_output = 64
         self.cat_skeleton = True
         
-        self.backbone = resnet50FPN(pretrained=True)
+        # self.backbone = resnet50FPN(pretrained=True)
+        self.backbone = fpn(swinv2_large())
+
         if self.cat_skeleton:
             self.segnet = resnet10units(256 + 55)  
         else:
@@ -50,7 +54,7 @@ class Pose2Seg(nn.Module):
         self.std = np.ones((self.size_input, self.size_input, 3)) * std
         # self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).cuda(0).float()
         self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).float().to(device)
-        self.visCount = 0
+        self.visCount = -2
         
         pass
     
@@ -94,13 +98,13 @@ class Pose2Seg(nn.Module):
 
         
     def _calcNetInputs(self):
-        self.inputMatrixs = [translib.get_aug_matrix(img.shape[1], img.shape[0], 512, 512, 
+        self.inputMatrixs = [translib.get_aug_matrix(img.shape[1], img.shape[0], 256, 256, 
                                                       angle_range=(-0., 0.),
                                                       scale_range=(1., 1.), 
                                                       trans_range=(-0., 0.))[0] \
                              for img in self.batchimgs]
         
-        inputs = [cv2.warpAffine(img, matrix[0:2], (512, 512)) \
+        inputs = [cv2.warpAffine(img, matrix[0:2], (256, 256)) \
                   for img, matrix in zip(self.batchimgs, self.inputMatrixs)]
         
         if len(inputs) == 1:
@@ -180,7 +184,10 @@ class Pose2Seg(nn.Module):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         inputs = (torch.from_numpy(self.inputs).to(device) / 255.0 - self.mean) / self.std
         [p1, p2, p3, p4] = self.backbone(inputs)
-        print(p1.size())
+        # print(p1.size())
+        # print("before interpolate",p1.shape)
+        # p1 =  F.interpolate(p1, size= (128,128), mode='bilinear')
+        # print("after interpolate", p1.shape)
         feature = p1
         
         alignHs = np.vstack(self.featAlignMatrixs)
@@ -262,26 +269,4 @@ class Pose2Seg(nn.Module):
             for j in range(len(masks)):
                 predmap = netOutput[idx]
                 
-                predmap = predmap[:, :, 1]
-                predmap[predmap>0.5] = 1
-                predmap[predmap<=0.5] = 0
-                predmap = cv2.cvtColor(predmap, cv2.COLOR_GRAY2BGR)
-                predmap = cv2.warpAffine(predmap, mVis[0:2], (256, 256))
-                
-                matrix = self.maskAlignMatrixs[i][j]
-                matrix = mVis.dot(matrix)
-                
-                imgRoi = cv2.warpAffine(img, matrix[0:2], (256, 256))
-                
-                mask = cv2.warpAffine(masks[j], matrix[0:2], (256, 256))
-                mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-                
-                I = np.logical_and(mask, predmap)
-                U = np.logical_or(mask, predmap)
-                iou = I.sum() / U.sum()
-                
-                vis = np.hstack((imgRoi, mask*255, predmap*255))
-                cv2.imwrite(outdir + '%d_%d_%.2f.jpg'%(self.visCount, j, iou), np.uint8(vis))
-                
-                idx += 1
-        
+                predmap = predmap[:, :, ]

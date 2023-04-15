@@ -5,6 +5,7 @@ from tqdm import tqdm
 from modeling.build_model import Pose2Seg
 from datasets.CocoDatasetInfo import CocoDatasetInfo, annToMask
 from pycocotools import mask as maskUtils
+# from train import Dataset
 
 def test(model, dataset='cocoVal', logger=print):    
     if dataset == 'OCHumanVal':
@@ -22,6 +23,8 @@ def test(model, dataset='cocoVal', logger=print):
     
     results_segm = []
     imgIds = []
+
+
     for i in tqdm(range(len(datainfos))):
         rawdata = datainfos[i]
         img = rawdata['data']

@@ -18,6 +18,7 @@ from lib.torch_utils import adjust_learning_rate
 from modeling.build_model import Pose2Seg
 from datasets.CocoDatasetInfo import CocoDatasetInfo, annToMask
 from test import test
+import time
 
 NAME = "release_base"
 
@@ -84,7 +85,7 @@ def train(model, dataloader, optimizer, epoch, iteration):
                       loss=averMeters["loss"])
                  )
         
-        if i % 10000 == 0:  
+        if i % 600 == 0:  
             torch.save(model.state_dict(), os.path.join(SNAPSHOTDIR, "%d_%d.pkl"%(epoch,i)))
             torch.save(model.state_dict(), os.path.join(SNAPSHOTDIR, "last.pkl"))
         
@@ -124,14 +125,26 @@ class Dataset():
 if __name__=="__main__":
     logger.info("===========> loading model <===========")
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    parser = argparse.ArgumentParser(description="Pose2Seg Training")
+    parser.add_argument(
+        "--weights",
+        help="path to .pkl model weight",
+        type=str,
+        default=None
+    )
+    args = parser.parse_args()
     # model = Pose2Seg().cuda()
     model = Pose2Seg().to(device)
-    #model.init("")
+    if args.weights:
+        model.init(args.weights)
     model.train()
+   
     
     logger.info("===========> loading data <===========")
-    datasetTrain = Dataset()
-    dataloaderTrain = torch.utils.data.DataLoader(datasetTrain, batch_size=4, shuffle=True,
+    datasetTrain = Dataset(test=False)
+    #modify it later
+    torch.manual_seed(3407)
+    dataloaderTrain = torch.utils.data.DataLoader(datasetTrain, batch_size=16, shuffle=True,
                                                    num_workers=4, pin_memory=False,
                                                    collate_fn=datasetTrain.collate_fn)
 
@@ -139,22 +152,24 @@ if __name__=="__main__":
     logger.info("===========> set optimizer <===========")
     ''' set your optimizer like this. Normally is Adam/SGD. '''
     #optimizer = torch.optim.SGD(model.parameters(), 0.0002, momentum=0.9, weight_decay=0.0005)
-    optimizer = torch.optim.Adam(model.parameters(), 0.0002, weight_decay=0.0000)
-
+    optimizer = torch.optim.Adam(model.parameters(), 0.00005, weight_decay=0.0005)
     iteration = 0
     epoch = 0
+    max = 25
     try:
-        while iteration < 14150*25:
+        while iteration < 14150*max:
             logger.info("===========>   training    <===========")
             iteration = train(model, dataloaderTrain, optimizer, epoch, iteration)
             epoch += 1
             
             logger.info("===========>   testing    <===========")
             test(model, dataset="cocoVal", logger=logger.info)
-            test(model, dataset="OCHumanVal", logger=logger.info)
+            time.sleep(60) 
+            # test(model, dataset="OCHumanVal", logger=logger.info)
 
 
     except (KeyboardInterrupt):
         logger.info("Save ckpt on exception ...")
         torch.save(model.state_dict(), os.path.join(SNAPSHOTDIR, "interrupt_%d_%d.pkl"%(epoch,iteration)))
         logger.info("Save ckpt done.")
+#TODO: get max IOU result out 

@@ -270,10 +270,9 @@ resnet50FPN, resnet101FPN
 def resnet50FPN(pretrained=False):
     model = ResnetXtFPN([3, 4, 6, 3], cardinality=1, base_width=64, usefpn=True)
     if pretrained:
-        pretrain_file = "./imagenet_pretrain/resnet50_from_modelzoo.pth"
+        pretrain_file = './imagenet_pretrain/resnet50_from_modelzoo.pth'
         if not os.path.exists(pretrain_file):
-            if not os.path.exists("./imagenet_pretrain"):
-                os.makedirs("./imagenet_pretrain")
+            os.makedirs("./imagenet_pretrain")
             convert_official(model, model_urls['resnet50'], pretrain_file)
         init_with_pretrain(model, torch.load(pretrain_file, map_location=lambda storage, loc: storage))
     return model
