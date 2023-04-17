@@ -85,7 +85,7 @@ def train(model, dataloader, optimizer, epoch, iteration):
                       loss=averMeters["loss"])
                  )
         
-        if i % 600 == 0:  
+        if i % 5000 == 0:  
             torch.save(model.state_dict(), os.path.join(SNAPSHOTDIR, "%d_%d.pkl"%(epoch,i)))
             torch.save(model.state_dict(), os.path.join(SNAPSHOTDIR, "last.pkl"))
         
@@ -98,7 +98,7 @@ class Dataset():
             AnnoFile = "./data/coco2017/annotations/person_keypoints_val2017_pose2seg.json"
         else:
             ImageRoot = "./data/coco2017/train2017"
-            AnnoFile = "./data/coco2017/annotations/person_keypoints_train2017_pose2seg.json"
+            AnnoFile = "./data/coco2017/annotations/person_keypoints_train2017_pose2seg.json"     
         self.datainfos = CocoDatasetInfo(ImageRoot, AnnoFile, onlyperson=True, loadimg=True)
     
     def __len__(self):
@@ -108,7 +108,6 @@ class Dataset():
         rawdata = self.datainfos[idx]
         img = rawdata["data"]
         image_id = rawdata["id"]
-        
         height, width = img.shape[0:2]
         gt_kpts = np.float32(rawdata["gt_keypoints"]).transpose(0, 2, 1) # (N, 17, 3)
         gt_segms = rawdata["segms"]
@@ -133,7 +132,6 @@ if __name__=="__main__":
         default=None
     )
     args = parser.parse_args()
-    # model = Pose2Seg().cuda()
     model = Pose2Seg().to(device)
     if args.weights:
         model.init(args.weights)
@@ -144,7 +142,7 @@ if __name__=="__main__":
     datasetTrain = Dataset(test=False)
     #modify it later
     torch.manual_seed(3407)
-    dataloaderTrain = torch.utils.data.DataLoader(datasetTrain, batch_size=16, shuffle=True,
+    dataloaderTrain = torch.utils.data.DataLoader(datasetTrain, batch_size=4, shuffle=True,
                                                    num_workers=4, pin_memory=False,
                                                    collate_fn=datasetTrain.collate_fn)
 
@@ -152,7 +150,7 @@ if __name__=="__main__":
     logger.info("===========> set optimizer <===========")
     ''' set your optimizer like this. Normally is Adam/SGD. '''
     #optimizer = torch.optim.SGD(model.parameters(), 0.0002, momentum=0.9, weight_decay=0.0005)
-    optimizer = torch.optim.Adam(model.parameters(), 0.00005, weight_decay=0.0005)
+    optimizer = torch.optim.AdamW(model.parameters(), 0.0001, weight_decay=0.005)
     iteration = 0
     epoch = 0
     max = 25
@@ -163,9 +161,10 @@ if __name__=="__main__":
             epoch += 1
             
             logger.info("===========>   testing    <===========")
-            test(model, dataset="cocoVal", logger=logger.info)
+            # test(model, dataset="cocoVal", logger=logger.info)
+            test(model, dataset="OCHumanVal", logger=logger.info)
             time.sleep(60) 
-            # test(model, dataset="OCHumanVal", logger=logger.info)
+
 
 
     except (KeyboardInterrupt):

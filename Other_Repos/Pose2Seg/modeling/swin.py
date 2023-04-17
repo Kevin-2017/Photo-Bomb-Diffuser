@@ -27,6 +27,11 @@ def swinv2_large(pretrained=True):
     model = timm.create_model('swinv2_large_window12to16_192to256.ms_in22k_ft_in1k', pretrained=pretrained,features_only=True) #
     return model
 
+def swinv2_large384(pretrained=True):
+    model = timm.create_model('swinv2_large_window12to24_192to384', pretrained=pretrained,features_only=True) #
+    return model
+    
+
 # fpn(feature pyramid extracter) wrapper for swim
 class fpn(nn.Module):
   def __init__(self, model: timm.models):
@@ -73,10 +78,9 @@ class fpn(nn.Module):
     # p4 = self.fpn_p4(p4)
     # p3 = self.fpn_p3(p3)
     # p2 = self.fpn_p2(p2)
-    p2,p3,p4=0,0,0
     p1 = self.fpn_p1(p1)
     #to couple with the later section
-    p1 = F.interpolate(p1, size= (128,128), mode='bilinear')
+    # p1 = F.interpolate(p1, size= (128,128), mode='nearest')
     return [p1,p2,p3,p4]
 
 

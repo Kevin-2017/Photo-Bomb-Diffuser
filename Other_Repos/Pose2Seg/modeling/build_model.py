@@ -19,7 +19,7 @@ from modeling.affine_align import affine_align_gpu
 from modeling.seg_module import resnet10units
 from modeling.core import PoseAlign
 from modeling.skeleton_feat import genSkeletons
-from modeling.swin import swinv2_large, fpn
+from modeling.swin import swinv2_large, fpn,swinv2_large384
 
 timers = Timers()
 
@@ -29,14 +29,16 @@ class Pose2Seg(nn.Module):
         self.MAXINST = 8
         ## size origin ->(m1)-> input ->(m2)-> feature ->(m3)-> align ->(m4)-> output
         # self.size_input = 512
-        self.size_input = 256
-        self.size_feat = 128
+        # self.size_input = 256
+        self.size_input = 384
+        self.size_feat = 96
         self.size_align = 64
         self.size_output = 64
         self.cat_skeleton = True
         
         # self.backbone = resnet50FPN(pretrained=True)
-        self.backbone = fpn(swinv2_large())
+        # self.backbone = fpn(swinv2_large())
+        self.backbone = fpn(swinv2_large384())
 
         if self.cat_skeleton:
             self.segnet = resnet10units(256 + 55)  
@@ -54,7 +56,7 @@ class Pose2Seg(nn.Module):
         self.std = np.ones((self.size_input, self.size_input, 3)) * std
         # self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).cuda(0).float()
         self.std = torch.from_numpy(self.std.transpose(2, 0, 1)).float().to(device)
-        self.visCount = -2
+        self.visCount = -10
         
         pass
     
@@ -98,13 +100,13 @@ class Pose2Seg(nn.Module):
 
         
     def _calcNetInputs(self):
-        self.inputMatrixs = [translib.get_aug_matrix(img.shape[1], img.shape[0], 256, 256, 
+        self.inputMatrixs = [translib.get_aug_matrix(img.shape[1], img.shape[0], self.size_input, self.size_input, 
                                                       angle_range=(-0., 0.),
                                                       scale_range=(1., 1.), 
                                                       trans_range=(-0., 0.))[0] \
                              for img in self.batchimgs]
         
-        inputs = [cv2.warpAffine(img, matrix[0:2], (256, 256)) \
+        inputs = [cv2.warpAffine(img, matrix[0:2], (self.size_input, self.size_input)) \
                   for img, matrix in zip(self.batchimgs, self.inputMatrixs)]
         
         if len(inputs) == 1:
@@ -139,7 +141,6 @@ class Pose2Seg(nn.Module):
             m1 = matrix    
             # transform gt_kpts to feature coordinates.
             kpts = translib.warpAffineKpts(kpts, m2.dot(m1))
-            
             self.featAlignMatrixs[i] = np.zeros((len(kpts), 3, 3), dtype=np.float32)
             self.maskAlignMatrixs[i] = np.zeros((len(kpts), 3, 3), dtype=np.float32)
             if self.cat_skeleton:
@@ -213,9 +214,11 @@ class Pose2Seg(nn.Module):
             netOutput = netOutput.detach().data.cpu().numpy()
             output = self._getMaskOutput(netOutput)
             
-            if self.visCount < 0:
-                self._visualizeOutput(netOutput)
-                self.visCount += 1
+            # if self.visCount < 0:
+            #     print("vis",self.visCount)
+            #     self._visualizeOutput(netOutput)
+            #     self.visCount += 1
+            #stop vis 
             
             return output 
         
@@ -264,9 +267,34 @@ class Pose2Seg(nn.Module):
         mVis = translib.stride_matrix(4)
         
         idx = 0
+        print("inside visualize")
+        # print("self.batchimgs---------", self.batchimgs)
+        # print("self.batchmasks---------", self.batchmasks)
+
         for i, (img, masks) in enumerate(zip(self.batchimgs, self.batchmasks)):
             height, width = img.shape[0:2]
             for j in range(len(masks)):
                 predmap = netOutput[idx]
                 
-                predmap = predmap[:, :, ]
+                predmap = predmap[:, :, 1]
+                predmap[predmap>0.5] = 1
+                predmap[predmap<=0.5] = 0
+                predmap = cv2.cvtColor(predmap, cv2.COLOR_GRAY2BGR)
+                predmap = cv2.warpAffine(predmap, mVis[0:2], (256, 256))
+                
+                matrix = self.maskAlignMatrixs[i][j]
+                matrix = mVis.dot(matrix)
+                
+                imgRoi = cv2.warpAffine(img, matrix[0:2], (256, 256))
+                
+                mask = cv2.warpAffine(masks[j], matrix[0:2], (256, 256))
+                mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+                
+                I = np.logical_and(mask, predmap)
+                U = np.logical_or(mask, predmap)
+                iou = I.sum() / U.sum()
+                
+                vis = np.hstack((imgRoi, mask*255, predmap*255))
+                cv2.imwrite(outdir + '%d_%d_%.2f.jpg'%(self.visCount, j, iou), np.uint8(vis))
+                
+                idx += 1

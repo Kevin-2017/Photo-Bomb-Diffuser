@@ -5,6 +5,9 @@ from tqdm import tqdm
 from modeling.build_model import Pose2Seg
 from datasets.CocoDatasetInfo import CocoDatasetInfo, annToMask
 from pycocotools import mask as maskUtils
+from torchmetrics import JaccardIndex
+from torchmetrics.classification import BinaryJaccardIndex
+import torch
 # from train import Dataset
 
 def test(model, dataset='cocoVal', logger=print):    
@@ -24,19 +27,18 @@ def test(model, dataset='cocoVal', logger=print):
     results_segm = []
     imgIds = []
 
-
+    mean_iou = 0
     for i in tqdm(range(len(datainfos))):
         rawdata = datainfos[i]
         img = rawdata['data']
         image_id = rawdata['id']
-        
+
         height, width = img.shape[0:2]
         gt_kpts = np.float32(rawdata['gt_keypoints']).transpose(0, 2, 1) # (N, 17, 3)
         gt_segms = rawdata['segms']
         gt_masks = np.array([annToMask(segm, height, width) for segm in gt_segms])
-            
         output = model([img], [gt_kpts], [gt_masks])
-    
+        concat_pred_mask = 0
         for mask in output[0]:
             maskencode = maskUtils.encode(np.asfortranarray(mask))
             maskencode['counts'] = maskencode['counts'].decode('ascii')
@@ -46,7 +48,18 @@ def test(model, dataset='cocoVal', logger=print):
                     "score": 1.0,
                     "segmentation": maskencode
                 })
+            concat_pred_mask += mask
         imgIds.append(image_id)
+        metric = BinaryJaccardIndex()
+        iou = metric(torch.FloatTensor(concat_pred_mask),torch.from_numpy(gt_masks[0]))
+        mean_iou = (iou-mean_iou)/(i+1) + mean_iou
+        # print(i)
+        # logger("iou",iou)
+    logger("mean_iou", mean_iou)
+
+        
+
+
     
     
     def do_eval_coco(image_ids, coco, results, flag):
@@ -63,11 +76,15 @@ def test(model, dataset='cocoVal', logger=print):
         return cocoEval
     
     cocoEval = do_eval_coco(imgIds, datainfos.COCO, results_segm, 'segm')
+
+
     logger('[POSE2SEG]          AP|.5|.75| S| M| L|    AR|.5|.75| S| M| L|')
     _str = '[segm_score] %s '%dataset
     for value in cocoEval.stats.tolist():
         _str += '%.3f '%value
     logger(_str)
+    logger("mean_iou", mean_iou)
+
     
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description="Pose2Seg Testing")
