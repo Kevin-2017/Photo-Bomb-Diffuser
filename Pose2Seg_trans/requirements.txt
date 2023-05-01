@@ -1,0 +1,16 @@
+cycler
+Cython
+kiwisolver
+matplotlib
+numpy
+opencv-python
+Pillow
+pycocotools
+pyparsing
+python-dateutil
+PyYAML
+scipy
+six
+torch
+torchvision
+tqdm
